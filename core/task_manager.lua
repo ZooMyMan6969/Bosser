@@ -69,8 +69,8 @@ function task_manager.execute_tasks()
     for _, task in ipairs(tasks) do
         if task.shouldExecute() then
             current_task = task
-            task.Execute()
-            break -- Execute only one task per pulse
+            task:Execute()  -- Use colon syntax to pass 'self'
+            break
         end
     end
 
