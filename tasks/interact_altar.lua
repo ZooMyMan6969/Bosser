@@ -1,8 +1,11 @@
+-- tasks/interact_altar.lua
+
 local utils      = require "core.utils"
 local enums      = require "data.enums"
 local tracker    = require "core.tracker"
 local explorer   = require "core.explorer"
 local settings   = require "core.settings"
+local town_salvage = require "tasks.town_salvage"  -- Add this line to require the town_salvage task
 
 local function interact_with_altar()
     local actors = actors_manager:get_all_actors()
@@ -17,17 +20,19 @@ end
 
 local task = {
     name = "Interact Altar",
+    altar_interaction_complete = false,  -- Add this flag
+
     shouldExecute = function()
         local is_in_boss_zone = utils.match_player_zone("Boss_WT4_") or utils.match_player_zone("Boss_WT3_")
         return is_in_boss_zone and interact_with_altar()
     end,
 
-    Execute = function()
+    Execute = function(self)
         local altar = interact_with_altar()
         if altar then
-            local actor_position = altar:get_position()  -- Abrufen der Position des Altars
+            local actor_position = altar:get_position()
             if utils.distance_to(actor_position) > 4 then
-                pathfinder.force_move_raw(actor_position)  -- Bewege den Spieler zum Altar
+                pathfinder.force_move_raw(actor_position)
             end
 
             if utils.distance_to(actor_position) <= 2 then
@@ -38,10 +43,15 @@ local task = {
 
                 utility.summon_boss()
                 settings.altar_activated = true
+                self.altar_interaction_complete = true  -- Set the flag to true
             end
         end
 
-        explorer.is_task_running = false  -- Zurücksetzen des Flags
+        -- Check if altar interaction is complete and items are picked up
+        if self.altar_interaction_complete and utils.are_items_picked_up() then
+            explorer.is_task_running = false
+            town_salvage.Execute(town_salvage)  -- Trigger the town salvage task
+        end
     end
 }
 return task

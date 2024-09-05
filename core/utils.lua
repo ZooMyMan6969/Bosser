@@ -8,6 +8,12 @@ function addUber(actorAddress, uberData)
     end
 end
 
+function utils.are_items_picked_up()
+    -- Implement logic to check if items are picked up
+    -- This is a placeholder implementation
+    return get_local_player():get_item_count() == 0
+end
+
 function utils.distance_to(target)
     local player_pos = get_player_position()
     local target_pos
