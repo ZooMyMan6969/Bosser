@@ -20,14 +20,14 @@ end
 
 local task = {
     name = "Interact Altar",
-    altar_interaction_complete = false,  -- Add this flag
+    altar_interaction_complete = false,
 
     shouldExecute = function()
         local is_in_boss_zone = utils.match_player_zone("Boss_WT4_") or utils.match_player_zone("Boss_WT3_")
         return is_in_boss_zone and interact_with_altar()
     end,
 
-    Execute = function(self)
+    Execute = function()
         local altar = interact_with_altar()
         if altar then
             local actor_position = altar:get_position()
@@ -43,15 +43,16 @@ local task = {
 
                 utility.summon_boss()
                 settings.altar_activated = true
-                self.altar_interaction_complete = true  -- Set the flag to true
+                task.altar_interaction_complete = true  -- Use task instead of self
             end
         end
 
         -- Check if altar interaction is complete and items are picked up
-        if self.altar_interaction_complete and utils.are_items_picked_up() then
+        if task.altar_interaction_complete and utils.are_items_picked_up() then
             explorer.is_task_running = false
-            town_salvage.Execute(town_salvage)  -- Trigger the town salvage task
+            town_salvage.Execute()  -- Remove the argument
         end
     end
 }
+
 return task
